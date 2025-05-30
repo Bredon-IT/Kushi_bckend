@@ -20,4 +20,9 @@ public class AdminServiceImpl implements AdminService {
         // Retrieves all booking records from the database
         return adminRepository.findAll();
     }
+
+    @Override
+    public Admin saveBooking(Admin admin) {
+        return adminRepository.save(admin);
+    }
 }

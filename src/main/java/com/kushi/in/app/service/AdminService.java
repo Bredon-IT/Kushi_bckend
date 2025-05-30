@@ -10,4 +10,6 @@ import java.util.List;
 public interface AdminService {
     // Declares a method to retrieve all booking records
     List<Admin> getAllBookings();
+
+    Admin saveBooking(Admin admin);
 }

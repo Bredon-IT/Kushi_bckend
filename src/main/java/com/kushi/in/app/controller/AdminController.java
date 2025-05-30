@@ -23,4 +23,10 @@ public class AdminController {
         // Returns all booking records from the database
         return adminService.getAllBookings();
     }
+    @PostMapping
+    public Admin createBooking(@RequestBody Admin admin){
+        // Saves a new booking record to the database
+         return adminService.saveBooking(admin);
+    }
+
 }
