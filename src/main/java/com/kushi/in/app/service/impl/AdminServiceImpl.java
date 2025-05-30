@@ -25,4 +25,11 @@ public class AdminServiceImpl implements AdminService {
     public Admin saveBooking(Admin admin) {
         return adminRepository.save(admin);
     }
+
+    @Override
+    public void assignWorker(Long bookingId, String workerName) {
+        Admin booking=adminRepository.findById(bookingId).orElseThrow(()->new RuntimeException("Booking not found ID: "+bookingId));
+        booking.setWorker_assign(workerName);
+        adminRepository.save(booking);
+    }
 }

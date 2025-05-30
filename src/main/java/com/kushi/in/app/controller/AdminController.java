@@ -2,9 +2,11 @@ package com.kushi.in.app.controller;
 
 import com.kushi.in.app.entity.Admin;
 import com.kushi.in.app.service.AdminService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -28,5 +30,16 @@ public class AdminController {
         // Saves a new booking record to the database
          return adminService.saveBooking(admin);
     }
+
+    @PutMapping("/{id}/assign-worker")
+    public ResponseEntity<String> assignWorker(@PathVariable("id") Long bookingId,
+                                                @RequestBody Map<String, String> body){
+
+        String workername = body.get("workername");
+        adminService.assignWorker(bookingId,workername);
+        return ResponseEntity.ok("worker assigned successfully");
+
+    }
+
 
 }

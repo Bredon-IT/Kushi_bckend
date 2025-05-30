@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Entity
 @Table(name = "tbl_booking_info")
-@Data
+
 public class Admin {
 
     @Id

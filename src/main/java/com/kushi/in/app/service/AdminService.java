@@ -12,4 +12,7 @@ public interface AdminService {
     List<Admin> getAllBookings();
 
     Admin saveBooking(Admin admin);
+
+    void assignWorker(Long bookingId,String workerName);
+
 }
