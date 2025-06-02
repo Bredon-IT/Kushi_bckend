@@ -31,15 +31,36 @@ public class AdminController {
          return adminService.saveBooking(admin);
     }
 
-    @PutMapping("/{id}/assign-worker")
+    @PutMapping("/{id}/assign-worker")// Maps HTTP PUT requests sent to /api/bookings/{id}/assign-worker to this method
+
+    // Indicates this method returns an HTTP response with a String message and status code
+    // Extracts the {id} from the URL path and stores it in bookingId//@PathVariable
+    // Extracts JSON data from the request body and puts it into a Map (key-value pairs)
     public ResponseEntity<String> assignWorker(@PathVariable("id") Long bookingId,
                                                 @RequestBody Map<String, String> body){
 
-        String workername = body.get("workername");
-        adminService.assignWorker(bookingId,workername);
-        return ResponseEntity.ok("worker assigned successfully");
+        String workername = body.get("workername");// Gets the value of the "workername" field from the request body
+        adminService.assignWorker(bookingId,workername); // Calls the service method to update the worker assignment in the database
+        return ResponseEntity.ok("worker assigned successfully");// Returns an HTTP 200 OK response with a success message in the body
 
     }
+
+    @GetMapping("/statistics")
+
+        public ResponseEntity<Map<String , Object>> getbookingStatistics(
+                @RequestParam(value="timePeriod",defaultValue = "all-time") String timePeriod){
+               try{
+                   Map<String,Object> status = adminService.getbookingStatistics(timePeriod);
+                           return ResponseEntity.ok(status);
+               }catch (Exception e){
+                   e.printStackTrace();
+                   return ResponseEntity.status(500).body(null);
+               }
+
+        }
+
+
+
 
 
 }

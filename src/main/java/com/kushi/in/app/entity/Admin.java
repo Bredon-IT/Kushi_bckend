@@ -3,6 +3,8 @@ package com.kushi.in.app.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "tbl_booking_info")
@@ -21,7 +23,7 @@ public class Admin {
 
     private String booking_amount;
 
-    private String booking_date;
+    private LocalDate booking_date;
 
     private String booking_service_name;
 
@@ -51,7 +53,7 @@ public class Admin {
 
     private String remarks;
 
-    private String total_amount;
+    private double total_amount;
 
     private String updated_by;
 
@@ -138,16 +140,18 @@ public class Admin {
         this.booking_amount = booking_amount;
     }
 
-    public String getBooking_date() {
-        return booking_date;
-    }
 
-    public void setBooking_date(String booking_date) {
-        this.booking_date = booking_date;
-    }
 
     public String getBooking_service_name() {
         return booking_service_name;
+    }
+
+    public LocalDate getBooking_date() {
+        return booking_date;
+    }
+
+    public void setBooking_date(LocalDate booking_date) {
+        this.booking_date = booking_date;
     }
 
     public void setBooking_service_name(String booking_service_name) {
@@ -258,11 +262,12 @@ public class Admin {
         this.remarks = remarks;
     }
 
-    public String getTotal_amount() {
+
+    public double getTotal_amount() {
         return total_amount;
     }
 
-    public void setTotal_amount(String total_amount) {
+    public void setTotal_amount(double total_amount) {
         this.total_amount = total_amount;
     }
 
