@@ -50,12 +50,26 @@ public class AdminController {
         public ResponseEntity<Map<String , Object>> getbookingStatistics(
                 @RequestParam(value="timePeriod",defaultValue = "all-time") String timePeriod){
                try{
-                   Map<String,Object> status = adminService.getbookingStatistics(timePeriod);
-                           return ResponseEntity.ok(status);
+                   Map<String,Object> status = adminService.getbookingStatistics(timePeriod);// Call the service to get statistics based on the timePeriod
+                           return ResponseEntity.ok(status); // Return the statistics with HTTP 200 OK status
                }catch (Exception e){
-                   e.printStackTrace();
-                   return ResponseEntity.status(500).body(null);
+                   e.printStackTrace(); // Print the error in case something goes wrong
+                   return ResponseEntity.status(500).body(null);  // Return HTTP 500 Internal Server Error with no body
                }
+
+        }
+
+        @GetMapping("/overview")
+
+        public ResponseEntity<Map<String,Object>> getbookingOverview(
+               @RequestParam(value="timePeriod",defaultValue = "all-time") String timePeriod){
+        try{
+            Map<String,Object> overview = adminService.getOverview(timePeriod);
+                  return ResponseEntity.ok(overview);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
+        }
 
         }
 

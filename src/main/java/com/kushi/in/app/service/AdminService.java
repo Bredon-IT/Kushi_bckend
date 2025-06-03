@@ -16,5 +16,9 @@ public interface AdminService {
 
     void assignWorker(Long bookingId,String workerName);// Declares a method to assign a worker to a booking using its ID
 
-    Map<String, Object> getbookingStatistics(String timePeriod);
+    Map<String, Object> getbookingStatistics(String timePeriod);// This method will return booking statistics based on the selected time period
+
+
+    Map<String, Object> getOverview(String timePeriod);
+    // String timePeriod - input parameter that decides how to filter the data (e.g., "one-week", "one-month")
 }
