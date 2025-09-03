@@ -5,7 +5,14 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface LoginRepository extends JpaRepository<Login, Long> {
-   boolean existsByUserEmail(String userEmail);
+   boolean existsByEmail(String Email);
+
+   Login findByEmailAndPassword(String email, String password);
+
+
+   Optional<Login> findByEmail(String email);
 }

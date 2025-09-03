@@ -73,7 +73,46 @@ public class AdminController {
 
         }
 
+    @GetMapping("/today-bookings")
+    public ResponseEntity<Long> getTodayBookings() {
+        long count = adminService.getTodayBookings();
+        return ResponseEntity.ok(count);
+    }
 
+    @GetMapping("/pending-approvals")
+    public ResponseEntity<Long> getPendingApprovals() {
+        long count = adminService.getPendingApprovals();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/recent-bookings")
+    public ResponseEntity<List<Admin>> getRecentBookingsByDate() {
+        List<Admin> recentBookings = adminService.getRecentBookingsByDate();
+        return ResponseEntity.ok(recentBookings);
+    }
+
+        @GetMapping("/visit-status")
+    public List<String> getVisitStatuses(){
+        return adminService.getVisitStatuses();
+        }
+
+        @PutMapping("/update")
+    public List<String> updateVisitStatuses(){
+        return adminService.updateVisitStatuses();
+        }
+
+
+
+    @GetMapping("/revenue-by-service")
+    public ResponseEntity<List<Map<String, Object>>> getRevenueByService() {
+        try {
+            List<Map<String, Object>> revenueData = adminService.getRevenueByService();
+            return ResponseEntity.ok(revenueData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
+        }
+    }
 
 
 

@@ -8,7 +8,7 @@ public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long service_id;
 
     private String active;
 
@@ -38,10 +38,12 @@ public class Customer {
 
     private String updated_date;
 
+    private String service_category;
+
     @Override
     public String toString() {
         return "Customer{" +
-                "id=" + id +
+                "service_id=" + service_id +
                 ", active='" + active + '\'' +
                 ", create_date='" + create_date + '\'' +
                 ", created_by='" + created_by + '\'' +
@@ -56,19 +58,28 @@ public class Customer {
                 ", service_type='" + service_type + '\'' +
                 ", updated_by='" + updated_by + '\'' +
                 ", updated_date='" + updated_date + '\'' +
+                ", service_category='"+ service_category + '\''+
                 '}';
     }
 
-    public Long getId() {
-        return id;
+    public Long getService_id() {
+        return service_id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setService_id(Long id) {
+        this.service_id = service_id;
     }
 
     public String getActive() {
         return active;
+    }
+
+    public String getService_category() {
+        return service_category;
+    }
+
+    public void setService_category(String service_category) {
+        this.service_category = service_category;
     }
 
     public void setActive(String active) {

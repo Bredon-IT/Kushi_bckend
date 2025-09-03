@@ -3,68 +3,77 @@ package com.kushi.in.app.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="tbl_login")
+@Table(name="tbl_admin")
 public class Login {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long login_id;
+    @Column(name = "admin_id")
+    private Long adminId;
 
-    private String userName;
+    @Column(name = "adminname", nullable = false, unique = true, length = 50)
+    private String adminname;
 
-    private String userEmail;
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
 
-    private String user_Phonenumber;
+    @Column(name = "phoneNumber", nullable = true, unique = true, length = 15)
+    private String phoneNumber;
 
-    private String user_Address;
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
 
-    private String user_Password;
 
-    public Long getLogin_id() {
-        return login_id;
+    public Login() {}
+
+    public Login(String adminname, String email, String password) {
+        this.adminname = adminname;
+        this.email = email;
+        this.phoneNumber= phoneNumber;
+        this.password = password;
+
     }
 
-    public void setLogin_id(Long login_id) {
-        this.login_id = login_id;
+    // Getters & Setters
+    public Long getAdminId() {
+        return adminId;
     }
 
-    public String getUserName() {
-        return userName;
+    public void setAdminId(Long adminId) {
+        this.adminId = adminId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public String getAdminname() {
+        return adminname;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
-    public String getUser_Phonenumber() {
-        return user_Phonenumber;
+    public void setAdminname(String username) {
+        this.adminname = username;
     }
 
-    public void setUser_Phonenumber(String user_Phonenumber) {
-        this.user_Phonenumber = user_Phonenumber;
+    public String getEmail() {
+        return email;
     }
 
-    public String getUser_Address() {
-        return user_Address;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void setUser_Address(String user_Address) {
-        this.user_Address = user_Address;
+    public String getPassword() {
+        return password;
     }
 
-    public String getUser_Password() {
-        return user_Password;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public void setUser_Password(String user_Password) {
-        this.user_Password = user_Password;
-    }
+
 }

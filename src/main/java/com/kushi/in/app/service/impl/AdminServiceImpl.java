@@ -3,24 +3,29 @@ package com.kushi.in.app.service.impl;
 import com.kushi.in.app.dao.AdminRepository;
 import com.kushi.in.app.entity.Admin;
 
+
 import com.kushi.in.app.service.AdminService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Service
 public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private AdminRepository adminRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
 
     @Override
     public List<Admin> getAllBookings() {
@@ -44,40 +49,50 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Map<String, Object> getbookingStatistics(String timePeriod) {
-        List<Admin> bookings=adminRepository.findAll();// Get all booking records from the database
-                LocalDate today= LocalDate.now();// Get today's Date
-//filter bookings from the last 1 week
-        if ("one-week".equalsIgnoreCase(timePeriod)){
-            bookings = bookings.stream().filter(b-> b.getBooking_date() !=null && b.getBooking_date().isAfter(today.minusWeeks(1)))
+        List<Admin> bookings = adminRepository.findAll();
+        LocalDate today = LocalDate.now();
+
+        if ("one-week".equalsIgnoreCase(timePeriod)) {
+            bookings = bookings.stream()
+                    .filter(b -> b.getBooking_date() != null && b.getBooking_date().isAfter(today.minusWeeks(1)))
                     .collect(Collectors.toList());
-    } else if("two-weeks".equalsIgnoreCase(timePeriod)){
-            bookings = bookings.stream().filter(b-> b.getBooking_date() !=null && b.getBooking_date().isAfter(today.minusWeeks(2)))
-                    .collect(Collectors.toList());//filter bookingns from the last 2 weeks
-            
+        } else if ("two-weeks".equalsIgnoreCase(timePeriod)) {
+            bookings = bookings.stream()
+                    .filter(b -> b.getBooking_date() != null && b.getBooking_date().isAfter(today.minusWeeks(2)))
+                    .collect(Collectors.toList());
         } else if ("one-month".equalsIgnoreCase(timePeriod)) {
-            bookings = bookings.stream().filter(b-> b.getBooking_date() !=null && b.getBooking_date().isAfter(today.minusMonths(1)))
-                    .collect(Collectors.toList());//filter bookings from the last 1 month
+            bookings = bookings.stream()
+                    .filter(b -> b.getBooking_date() != null && b.getBooking_date().isAfter(today.minusMonths(1)))
+                    .collect(Collectors.toList());
         }
-// Create a map to store total revenue per service
-        Map<String ,Double> serviceRevenue= new HashMap<>();
-            double totalbooking_amount=0.0;
-//loop through each booking
-            for (Admin booking: bookings){
-                String service = booking.getBooking_service_name();//get service name
-                double amount = booking.getTotal_amount();//get booking amount
-                totalbooking_amount += amount;//get total amount
-                serviceRevenue.put(service, serviceRevenue.getOrDefault(service, 0.0) + amount);//Add or update revenue for this service
-            }
-            //prepare the response map
-            Map<String,Object> response=new HashMap<>();
-            response.put("lables",new ArrayList<>(serviceRevenue.keySet()));//List of service names
-            response.put("data",new ArrayList<>(serviceRevenue.values()));//total revenue amount per service
-            response.put("totalcustomers",bookings.size());//total no.of bookings
-            response.put("totalbooking_amount",totalbooking_amount);//total revenue from all bookings
 
-            return response; // Return the statistics as a response
+        Map<String, Double> serviceRevenue = new HashMap<>();
+        double totalAmount = 0.0;
 
+        for (Admin booking : bookings) {
+            String service = booking.getBooking_service_name();
+            double amount = booking.getTotal_amount();
+            totalAmount += amount;
+            serviceRevenue.put(service, serviceRevenue.getOrDefault(service, 0.0) + amount);
+        }
 
+        // ✅ Booking Trends by Date
+        Map<LocalDate, Long> bookingTrends = bookings.stream()
+                .filter(b -> b.getBooking_date() != null)
+                .collect(Collectors.groupingBy(
+                        Admin::getBooking_date,
+                        TreeMap::new, // Sorted by date
+                        Collectors.counting()
+                ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("lables", new ArrayList<>(serviceRevenue.keySet()));
+        response.put("data", new ArrayList<>(serviceRevenue.values()));
+        response.put("totalcustomers", bookings.size());
+        response.put("totalbooking_amount", totalAmount);
+        response.put("bookingTrends", bookingTrends); // ✅ Add trend data for frontend chart
+
+        return response;
     }
 
     @Override
@@ -97,13 +112,75 @@ public class AdminServiceImpl implements AdminService {
                         .collect(Collectors.toList());
 
            }
-           double totalbookingamount=bookings.stream().mapToDouble(Admin::getTotal_amount).sum();
+           double totalAmount=bookings.stream().mapToDouble(Admin::getTotal_amount).sum();
            int totalCustomers = bookings.size();
+           int totalBookings= bookings.size();
 
            Map<String,Object> overview = new HashMap<>();
-           overview.put("totalbookingamount",totalbookingamount);
-           overview.put("totalCustomers",totalCustomers);
+        overview.put("totalAmount", totalAmount);
+        overview.put("totalCustomers",totalCustomers);
+        overview.put("totalBookings",totalBookings);
 
            return overview;
+    }
+
+
+    @Override
+    public List<Admin> getRecentBookingsByDate() {
+        return adminRepository.findAll().stream()
+                .filter(admin -> admin.getBooking_date() != null)
+                .sorted(Comparator.comparing(Admin::getBooking_date).reversed())
+                .limit(5) // Optional: Limit to recent 10 bookings
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getVisitStatuses() {
+        return adminRepository.findAll().stream()
+                .map(admin -> {
+
+                if ("Completed".equalsIgnoreCase(admin.getBooking_status())){
+                    return  "visit completed";
+                }else {
+                   return  "visit not completed";
+                }
+
+
+                }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> updateVisitStatuses() {
+        return adminRepository.findAll().stream()
+                .map(admin -> {
+                    String status;
+                    if ("Completed".equalsIgnoreCase(admin.getBooking_status())){
+                        status=  "visit completed";
+                    }else {
+                      status= "visit not completed";
+                    }
+
+                    admin.setVisit_list(status);
+                    adminRepository.save(admin);
+                    return  status;
+
+                }).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<Map<String, Object>> getRevenueByService() {
+        return adminRepository.getRevenueByService();
+    }
+
+
+    @Override
+    public long getTodayBookings() {
+        return adminRepository.countTodayBookings();
+    }
+
+    @Override
+    public long getPendingApprovals() {
+        return adminRepository.countPendingApprovals();
     }
 }

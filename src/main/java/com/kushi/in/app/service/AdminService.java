@@ -1,10 +1,13 @@
 package com.kushi.in.app.service;
 
 import com.kushi.in.app.entity.Admin;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+
+
 
 @Service
 
@@ -21,4 +24,17 @@ public interface AdminService {
 
     Map<String, Object> getOverview(String timePeriod);
     // String timePeriod - input parameter that decides how to filter the data (e.g., "one-week", "one-month")
+    
+    List<String> getVisitStatuses();
+
+     List<String> updateVisitStatuses();
+
+    List<Admin> getRecentBookingsByDate();
+
+    List<Map<String, Object>> getRevenueByService();
+
+
+    long getTodayBookings();
+
+    long getPendingApprovals();
 }

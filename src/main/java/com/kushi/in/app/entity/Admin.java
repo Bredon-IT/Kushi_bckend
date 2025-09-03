@@ -6,6 +6,8 @@ import lombok.Data;
 import java.time.LocalDate;
 
 
+
+
 @Entity
 @Table(name = "tbl_booking_info")
 
@@ -53,7 +55,7 @@ public class Admin {
 
     private String remarks;
 
-    private double total_amount;
+    private Double total_amount;
 
     private String updated_by;
 
@@ -264,10 +266,10 @@ public class Admin {
 
 
     public double getTotal_amount() {
-        return total_amount;
+        return total_amount == null ? 0.0 : total_amount;
     }
 
-    public void setTotal_amount(double total_amount) {
+    public void setTotal_amount(Double total_amount) {
         this.total_amount = total_amount;
     }
 
