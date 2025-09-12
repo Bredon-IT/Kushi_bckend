@@ -1,97 +1,199 @@
+// src/main/java/com/kushi/in/app/entity/Customer.java
 package com.kushi.in.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
+@Data
 @Entity
-@Table(name="tbl_service_info" )
+@Table(name = "tbl_booking_info")
 public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long booking_id;
+
+    private Integer customer_id;
+    private String customer_name;
+    private String customer_email;
+    private String customer_number;
+    private String address_line_1;
+    private String address_line_2;
+    private String address_line_3;
+    private Double booking_amount;
+    private Double total_amount;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime bookingDate; // ⭐ Use consistent camelCase field name
+
+    private String booking_service_name;
+
+    @Column(name = "booking_status")
+    private String bookingStatus = "pending";
+    private String booking_time;
+    private String city;
+    private String zip_code;
+    private String confirmation_date;
+    private String created_by;
+    private String created_date;
+    private String payment_status;
+    private String reference_details;
+    private String reference_name;
+    private String remarks;
+    private String updated_by;
+    private String updated_date;
+    private String worker_assign;
+    private String visit_list;
+
+    @Column(name = "service_id")
     private Long service_id;
 
-    private String active;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id", referencedColumnName = "service_id", insertable = false, updatable = false)
+    private Services services;
 
-    private String create_date;
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
-    private String created_by;
-
-    private String rating;
-
-    private String rating_count;
-
-    private String remarks;
-
-    private double service_cost;
-
-    private String service_description;
-
-    private String service_details;
-
-    private String service_image_url;
-
-    private String service_name;
-
-    private String service_type;
-
-    private String updated_by;
-
-    private String updated_date;
-
-    private String service_category;
-
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "service_id=" + service_id +
-                ", active='" + active + '\'' +
-                ", create_date='" + create_date + '\'' +
-                ", created_by='" + created_by + '\'' +
-                ", rating='" + rating + '\'' +
-                ", rating_count='" + rating_count + '\'' +
-                ", remarks='" + remarks + '\'' +
-                ", service_cost=" + service_cost +
-                ", service_description='" + service_description + '\'' +
-                ", service_details='" + service_details + '\'' +
-                ", service_image_url='" + service_image_url + '\'' +
-                ", service_name='" + service_name + '\'' +
-                ", service_type='" + service_type + '\'' +
-                ", updated_by='" + updated_by + '\'' +
-                ", updated_date='" + updated_date + '\'' +
-                ", service_category='"+ service_category + '\''+
-                '}';
+    public Long getBooking_id() {
+        return booking_id;
     }
 
-    public Long getService_id() {
-        return service_id;
+    public void setBooking_id(Long booking_id) {
+        this.booking_id = booking_id;
     }
 
-    public void setService_id(Long id) {
-        this.service_id = service_id;
+    public Integer getCustomer_id() {
+        return customer_id;
     }
 
-    public String getActive() {
-        return active;
+    public void setCustomer_id(Integer customer_id) {
+        this.customer_id = customer_id;
     }
 
-    public String getService_category() {
-        return service_category;
+    public String getCustomer_name() {
+        return customer_name;
     }
 
-    public void setService_category(String service_category) {
-        this.service_category = service_category;
+    public void setCustomer_name(String customer_name) {
+        this.customer_name = customer_name;
     }
 
-    public void setActive(String active) {
-        this.active = active;
+    public String getCustomer_email() {
+        return customer_email;
     }
 
-    public String getCreate_date() {
-        return create_date;
+    public void setCustomer_email(String customer_email) {
+        this.customer_email = customer_email;
     }
 
-    public void setCreate_date(String create_date) {
-        this.create_date = create_date;
+    public String getCustomer_number() {
+        return customer_number;
+    }
+
+    public void setCustomer_number(String customer_number) {
+        this.customer_number = customer_number;
+    }
+
+    public String getAddress_line_1() {
+        return address_line_1;
+    }
+
+    public void setAddress_line_1(String address_line_1) {
+        this.address_line_1 = address_line_1;
+    }
+
+    public String getAddress_line_2() {
+        return address_line_2;
+    }
+
+    public void setAddress_line_2(String address_line_2) {
+        this.address_line_2 = address_line_2;
+    }
+
+    public String getAddress_line_3() {
+        return address_line_3;
+    }
+
+    public void setAddress_line_3(String address_line_3) {
+        this.address_line_3 = address_line_3;
+    }
+
+    public Double getBooking_amount() {
+        return booking_amount;
+    }
+
+    public void setBooking_amount(Double booking_amount) {
+        this.booking_amount = booking_amount;
+    }
+
+    public Double getTotal_amount() {
+        return total_amount;
+    }
+
+    public void setTotal_amount(Double total_amount) {
+        this.total_amount = total_amount;
+    }
+
+    public LocalDateTime getBookingDate() {
+        return bookingDate;
+    }
+
+    public void setBookingDate(LocalDateTime bookingDate) {
+        this.bookingDate = bookingDate;
+    }
+
+    public String getBooking_service_name() {
+        return booking_service_name;
+    }
+
+    public void setBooking_service_name(String booking_service_name) {
+        this.booking_service_name = booking_service_name;
+    }
+
+    public String getBookingStatus() {
+        return bookingStatus;
+    }
+
+    public void setBookingStatus(String bookingStatus) {
+        this.bookingStatus = bookingStatus;
+    }
+
+    public String getBooking_time() {
+        return booking_time;
+    }
+
+    public void setBooking_time(String booking_time) {
+        this.booking_time = booking_time;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getZip_code() {
+        return zip_code;
+    }
+
+    public void setZip_code(String zip_code) {
+        this.zip_code = zip_code;
+    }
+
+    public String getConfirmation_date() {
+        return confirmation_date;
+    }
+
+    public void setConfirmation_date(String confirmation_date) {
+        this.confirmation_date = confirmation_date;
     }
 
     public String getCreated_by() {
@@ -102,20 +204,36 @@ public class Customer {
         this.created_by = created_by;
     }
 
-    public String getRating() {
-        return rating;
+    public String getCreated_date() {
+        return created_date;
     }
 
-    public void setRating(String rating) {
-        this.rating = rating;
+    public void setCreated_date(String created_date) {
+        this.created_date = created_date;
     }
 
-    public String getRating_count() {
-        return rating_count;
+    public String getPayment_status() {
+        return payment_status;
     }
 
-    public void setRating_count(String rating_count) {
-        this.rating_count = rating_count;
+    public void setPayment_status(String payment_status) {
+        this.payment_status = payment_status;
+    }
+
+    public String getReference_details() {
+        return reference_details;
+    }
+
+    public void setReference_details(String reference_details) {
+        this.reference_details = reference_details;
+    }
+
+    public String getReference_name() {
+        return reference_name;
+    }
+
+    public void setReference_name(String reference_name) {
+        this.reference_name = reference_name;
     }
 
     public String getRemarks() {
@@ -124,54 +242,6 @@ public class Customer {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
-    }
-
-    public double getService_cost() {
-        return service_cost;
-    }
-
-    public void setService_cost(double service_cost) {
-        this.service_cost = service_cost;
-    }
-
-    public String getService_description() {
-        return service_description;
-    }
-
-    public void setService_description(String service_description) {
-        this.service_description = service_description;
-    }
-
-    public String getService_details() {
-        return service_details;
-    }
-
-    public void setService_details(String service_details) {
-        this.service_details = service_details;
-    }
-
-    public String getService_image_url() {
-        return service_image_url;
-    }
-
-    public void setService_image_url(String service_image_url) {
-        this.service_image_url = service_image_url;
-    }
-
-    public String getService_name() {
-        return service_name;
-    }
-
-    public void setService_name(String service_name) {
-        this.service_name = service_name;
-    }
-
-    public String getService_type() {
-        return service_type;
-    }
-
-    public void setService_type(String service_type) {
-        this.service_type = service_type;
     }
 
     public String getUpdated_by() {
@@ -188,5 +258,45 @@ public class Customer {
 
     public void setUpdated_date(String updated_date) {
         this.updated_date = updated_date;
+    }
+
+    public String getWorker_assign() {
+        return worker_assign;
+    }
+
+    public void setWorker_assign(String worker_assign) {
+        this.worker_assign = worker_assign;
+    }
+
+    public String getVisit_list() {
+        return visit_list;
+    }
+
+    public void setVisit_list(String visit_list) {
+        this.visit_list = visit_list;
+    }
+
+    public Long getService_id() {
+        return service_id;
+    }
+
+    public void setService_id(Long service_id) {
+        this.service_id = service_id;
+    }
+
+    public Services getServices() {
+        return services;
+    }
+
+    public void setServices(Services services) {
+        this.services = services;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
