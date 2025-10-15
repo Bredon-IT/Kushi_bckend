@@ -25,17 +25,26 @@ public interface AdminRepository extends JpaRepository<Customer, Long> {
     long countPendingApprovals();
 
 
-    @Query(value = "SELECT b.customer_id, b.customer_name, COUNT(b.customer_id) AS booking_count, " +
-            "b.address_line_1, b.customer_number, SUM(b.booking_amount) as total_amount  " +
+    @Query(value = "SELECT b.customer_email, " +
+            "MAX(b.customer_name) AS customer_name, " +
+            "COUNT(b.customer_email) AS booking_count, " +
+            "MAX(b.address_line_1) AS address_line_1, " +
+            "MAX(b.customer_number) AS customer_number, " +
+            "SUM(b.booking_amount) AS totalAmount " +
             "FROM tbl_booking_info b " +
-            "GROUP BY b.customer_id, b.customer_name, b.address_line_1, b.customer_number " +
-            "ORDER BY booking_count DESC LIMIT 5", nativeQuery = true)
+            "GROUP BY b.customer_email " +
+            "ORDER BY booking_count DESC " +
+            "LIMIT 5", nativeQuery = true)
     List<Object[]> findTopBookedCustomers();
 
 
 
-    @Query("SELECT c.booking_service_name, COUNT(c) FROM Customer c GROUP BY c.booking_service_name ORDER BY COUNT(c) DESC")
+    @Query("SELECT s.service_name, s.service_image_url, s.service_description, COUNT(c.booking_id), s.service_name FROM Customer c JOIN c.services s GROUP BY s.service_id ORDER BY COUNT(c.booking_id) DESC")
     List<Object[]> findTopServices(Pageable pageable);
+
+
+
+
 
 
     @Query(value = "SELECT s.service_name, AVG(s.rating) AS rating, COUNT(s.rating) AS rating_count, " +

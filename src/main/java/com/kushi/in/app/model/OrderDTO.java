@@ -1,18 +1,18 @@
 package com.kushi.in.app.model;
 
 import lombok.Data;
-
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @Data
 public class OrderDTO {
     private Long id;
     private LocalDateTime date;
-    private List<String> services;
+   private String booking_service_name;
     private Double amount;
     private String address;
     private Integer rating;
+    private String status;
 
     public Long getId() {
         return id;
@@ -30,12 +30,12 @@ public class OrderDTO {
         this.date = date;
     }
 
-    public List<String> getServices() {
-        return services;
+    public String getBooking_service_name() {
+        return booking_service_name;
     }
 
-    public void setServices(List<String> services) {
-        this.services = services;
+    public void setBooking_service_name(String booking_service_name) {
+        this.booking_service_name = booking_service_name;
     }
 
     public Double getAmount() {
@@ -60,5 +60,13 @@ public class OrderDTO {
 
     public void setRating(Integer rating) {
         this.rating = rating;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

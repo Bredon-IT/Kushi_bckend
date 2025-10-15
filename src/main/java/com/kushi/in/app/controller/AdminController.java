@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173") // Update with actual frontend URL for production
+@CrossOrigin(origins = "https://main.dhtawzq4yzgjo.amplifyapp.com") // Update with actual frontend URL for production
 public class AdminController {
 
     private  AdminService adminService;
@@ -45,20 +45,17 @@ public class AdminController {
         // Saves a new booking record to the database
          return adminService.saveBooking(customer);
     }
-
-    @PutMapping("/{id}/assign-worker")// Maps HTTP PUT requests sent to /api/bookings/{id}/assign-worker to this method
-
-    // Indicates this method returns an HTTP response with a String message and status code
-    // Extracts the {id} from the URL path and stores it in bookingId//@PathVariable
-    // Extracts JSON data from the request body and puts it into a Map (key-value pairs)
+    /// Assign workers
+    @PutMapping("/{id}/assign-worker")
     public ResponseEntity<String> assignWorker(@PathVariable("id") Long bookingId,
-                                                @RequestBody Map<String, String> body){
+                                               @RequestBody Map<String, String> body){
 
-        String workername = body.get("workername");// Gets the value of the "workername" field from the request body
-        adminService.assignWorker(bookingId,workername); // Calls the service method to update the worker assignment in the database
-        return ResponseEntity.ok("worker assigned successfully");// Returns an HTTP 200 OK response with a success message in the body
-
+        String workername = body.get("workername"); // Only worker name is needed
+        adminService.assignWorker(bookingId, workername); // Call service method
+        return ResponseEntity.ok("Worker assigned successfully");
     }
+
+
 
     // =======================
     // 📌 Booking Stats
@@ -151,13 +148,12 @@ public class AdminController {
     //Top Services
     @GetMapping("/top-services")
     public ResponseEntity<Map<String, Object>> getTopServices() {
-        List<Map<String, Object>> topServices = adminService.getTopServices();
-
         Map<String, Object> response = new HashMap<>();
-        response.put("topServices", topServices);
-
+        response.put("topServices", adminService.getTopServices());
         return ResponseEntity.ok(response);
     }
+
+
 
     // To fetch ratings
 
@@ -173,16 +169,21 @@ public class AdminController {
     // 📌 Invoice & Reports
     // =======================
 
-    //to fetch invoices
     @GetMapping("/invoices")
-    public ResponseEntity<List<InvoiceDTO>> getAllInvoices(){
+    public ResponseEntity<List<InvoiceDTO>> getAllInvoices() {
         List<InvoiceDTO> invoices = adminService.getAllInvoices();
 
-        if(invoices.isEmpty()){
+        // ✅ Filter only completed bookings
+        List<InvoiceDTO> completedInvoices = invoices.stream()
+                .filter(invoice -> "completed".equalsIgnoreCase(invoice.getBookingStatus()))
+                .toList();
+
+        if (completedInvoices.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(invoices);
+        return ResponseEntity.ok(completedInvoices);
     }
+
 
 
     //financial management report
@@ -203,6 +204,23 @@ public class AdminController {
                             row.get("totalRevenue") + "," +
                             row.get("bookingCount")
             );
+        }
+    }
+
+    // to get category wise chart.
+
+    @GetMapping("/category-bookings")
+    public ResponseEntity<List<Map<String, Object>>> getCategoryBookings(
+            @RequestParam(value = "category", required = false) String categoryFilter,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate
+    ) {
+        try {
+            List<Map<String, Object>> bookings = adminService.getCategoryBookings(categoryFilter, startDate, endDate);
+            return ResponseEntity.ok(bookings);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
         }
     }
 

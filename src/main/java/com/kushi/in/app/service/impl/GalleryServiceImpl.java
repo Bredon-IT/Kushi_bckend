@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,22 +27,31 @@ public class GalleryServiceImpl implements GalleryService {
     private GalleryRepository galleryRepository;
 
     @Override
-    public void saveFile(MultipartFile file, String description) throws IOException {
-        // Ensure upload folder exists
+    public void saveFile(MultipartFile file, String fileUrl, String description) throws IOException {
         Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
+        if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+
+        String fileName;
+        if (file != null) {
+            fileName = file.getOriginalFilename();
+            Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
+        } else if (fileUrl != null && !fileUrl.isEmpty()) {
+            fileName = Paths.get(new java.net.URL(fileUrl).getPath()).getFileName().toString();
+            try (InputStream in = new java.net.URL(fileUrl).openStream()) {
+                Files.copy(in, uploadPath.resolve(fileName));
+            }
+        } else {
+            throw new IllegalArgumentException("No file or URL provided");
         }
 
-        // Save file locally
-        String fileName = file.getOriginalFilename();
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath);
-
-        // Save DB entry
-        Gallery item = new Gallery(fileName, "uploads/" + fileName, description);
+        Gallery item = new Gallery();
+        item.setFileName(fileName);
+        item.setFileUrl("uploads/" + fileName);
+        item.setDescription(description);
+        item.setUploadedAt(LocalDateTime.now());
         galleryRepository.save(item);
     }
+
 
     @Override
     public List<GalleryDTO> getAllFiles() {

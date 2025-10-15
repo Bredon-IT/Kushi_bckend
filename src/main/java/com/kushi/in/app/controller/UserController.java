@@ -1,12 +1,13 @@
 package com.kushi.in.app.controller;
 
+import com.kushi.in.app.dao.CustomerRepository;
 import com.kushi.in.app.dao.UserRepository;
-import com.kushi.in.app.entity.Order;
+import com.kushi.in.app.entity.Customer;
 import com.kushi.in.app.entity.User;
 import com.kushi.in.app.model.*;
-import com.kushi.in.app.service.UserService;
-import com.kushi.in.app.service.OrderService;
 
+import com.kushi.in.app.service.OrderService;
+import com.kushi.in.app.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +16,27 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(
+        origins = "https://main.dhtawzq4yzgjo.amplifyapp.com",  // Your React app URL
+        allowCredentials = "true"
+)
+
 public class UserController {
 
     private final UserService userService;
     private final UserRepository userRepository;
     private final OrderService orderService;
 
-    public UserController(UserService userService, UserRepository userRepository, OrderService orderService) {
+    private final CustomerRepository customerRepository; // ✅ Add this
+
+    public UserController(UserService userService,
+                          UserRepository userRepository,
+                          OrderService orderService,
+                          CustomerRepository customerRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.orderService = orderService;
+        this.customerRepository = customerRepository; // ✅ Initialize
     }
 
     @PostMapping("/signup")
@@ -53,15 +64,6 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/orders/{userId}")
-    public ResponseEntity<List<OrderDTO>> getUserOrders(@PathVariable Long userId) {
-        List<OrderDTO> orders = orderService.getOrdersByUserId(userId);
-        return ResponseEntity.ok(orders);
-    }
-
-
-
-
     @PutMapping("/profile/{id}")
     public ResponseEntity<User> updateProfile(@PathVariable Long id, @RequestBody User updatedUser) {
         User user = userRepository.findById(id)
@@ -78,10 +80,60 @@ public class UserController {
         return ResponseEntity.ok(saved);
     }
 
-    @PostMapping("/orders")
-    public ResponseEntity<Order> createOrder(@RequestBody OrderRequest orderRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderRequest));
+
+
+
+
+
+
+    // ⭐️ Rating update endpoint
+    @PutMapping("/bookings/{id}/rating")
+    public ResponseEntity<String> rateBooking(
+            @PathVariable Long id,
+            @RequestBody RatingRequest request) {
+        orderService.updateRatingAndFeedback(id, request);
+        return ResponseEntity.ok("Rating and feedback saved successfully");
     }
 
 
+    // ✅ Fetch logged-in user's bookings based on email passed as query param
+    // Fetch logged-in user's bookings based on email passed as query param
+    @GetMapping("/bookings/logged-in")
+    public ResponseEntity<List<Customer>> getLoggedInBookings(@RequestParam("email") String email) {
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().build(); // 400 if email not provided
+        }
+
+        // Find user by email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Fetch bookings for this user
+        List<Customer> bookings = orderService.getBookingsForUserByEmail(email);
+
+        if (bookings.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 if no bookings found
+        }
+
+        return ResponseEntity.ok(bookings);
+    }
+
+
+
+    // ✅ Create a new booking for logged-in user
+    @PostMapping("/bookings/logged-in/{userId}")
+    public ResponseEntity<Customer> createBooking(@PathVariable Long userId, @RequestBody Customer booking) {
+        // Set the user for this booking
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        booking.setUser(user);
+        booking.setCustomer_email(user.getEmail());
+
+        Customer savedBooking = customerRepository.save(booking);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedBooking);
+    }
 }
+
+
+
+

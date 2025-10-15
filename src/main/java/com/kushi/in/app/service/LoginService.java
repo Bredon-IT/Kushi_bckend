@@ -1,12 +1,12 @@
 package com.kushi.in.app.service;
 
 import com.kushi.in.app.entity.Login;
+import java.util.List;
 
 public interface LoginService {
-  String registeradmin(Login login);
+
 
   Login loginAdmin(String email, String password);
-
 
 
   Login getAdminByEmail(String email);
@@ -16,4 +16,12 @@ public interface LoginService {
   // LoginService.java
   Login updatePassword(Long adminId, String oldPassword, String newPassword);
 
+  Login addUser(Login login);
+
+  List<Login> getAllUsers();
+
+  void deleteUser(Long targetAdminId);
+
+  void updatePassword(String email, String newPassword, String confirmPassword);
 }
+ 

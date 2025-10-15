@@ -39,8 +39,6 @@ public class User {
     private String city;
     private String pincode;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Customer> bookings;
 
 
 
@@ -126,11 +124,5 @@ public class User {
         this.pincode = pincode;
     }
 
-    public List<Customer> getBookings() {
-        return bookings;
-    }
 
-    public void setBookings(List<Customer> bookings) {
-        this.bookings = bookings;
-    }
 }

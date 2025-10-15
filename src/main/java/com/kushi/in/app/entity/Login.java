@@ -24,15 +24,20 @@ public class Login {
     private String password;
 
 
+    private String role;
+
     public Login() {}
 
-    public Login(String adminname, String email, String password) {
+    public Login(Long adminId, String adminname, String email, String phoneNumber, String password, String role) {
+        this.adminId = adminId;
         this.adminname = adminname;
         this.email = email;
-        this.phoneNumber= phoneNumber;
+        this.phoneNumber = phoneNumber;
         this.password = password;
-
+        this.role = role;
     }
+
+
 
     // Getters & Setters
     public Long getAdminId() {
@@ -75,5 +80,11 @@ public class Login {
         this.password = password;
     }
 
+    public String getRole() {
+        return role;
+    }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

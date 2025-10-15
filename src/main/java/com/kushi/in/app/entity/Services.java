@@ -38,28 +38,22 @@ public class Services {
     private String updated_by;
 
     private String updated_date;
+    @Column(columnDefinition = "LONGTEXT")
+    private String service_package;
 
     private String service_category;
-    @Column(columnDefinition = "LONGTEXT")
-    private String overview;
-    @Column(columnDefinition = "LONGTEXT")
-    private String our_process;
-    @Column(columnDefinition = "LONGTEXT")
-    private String benefits;
-    @Column(columnDefinition = "LONGTEXT")
-    private String whats_included;
-    @Column(columnDefinition = "LONGTEXT")
-    private String whats_not_included;
-    @Column(columnDefinition = "LONGTEXT")
-    private String why_choose_us;
 
-    public String getOverview() {
-        return overview;
+    public String getService_package() {
+        return service_package;
+    }
+
+    public void setService_package(String service_package) {
+        this.service_package = service_package;
     }
 
     @Override
     public String toString() {
-        return "Customer{" +
+        return "Services{" +
                 "service_id=" + service_id +
                 ", active='" + active + '\'' +
                 ", create_date='" + create_date + '\'' +
@@ -75,6 +69,7 @@ public class Services {
                 ", service_type='" + service_type + '\'' +
                 ", updated_by='" + updated_by + '\'' +
                 ", updated_date='" + updated_date + '\'' +
+                ", service_package='" + service_package + '\'' +
                 ", service_category='" + service_category + '\'' +
                 ", overview='" + overview + '\'' +
                 ", our_process='" + our_process + '\'' +
@@ -82,7 +77,32 @@ public class Services {
                 ", whats_included='" + whats_included + '\'' +
                 ", whats_not_included='" + whats_not_included + '\'' +
                 ", why_choose_us='" + why_choose_us + '\'' +
+                ", kushi_teamwork='" + kushi_teamwork + '\'' +
+                ", faq='" + faq + '\'' +
                 '}';
+    }
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String overview;
+    @Column(columnDefinition = "LONGTEXT")
+    private String our_process;
+    @Column(columnDefinition = "LONGTEXT")
+    private String benefits;
+    @Column(columnDefinition = "LONGTEXT")
+    private String whats_included;
+    @Column(columnDefinition = "LONGTEXT")
+    private String whats_not_included;
+    @Column(columnDefinition = "LONGTEXT")
+    private String why_choose_us;
+
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String kushi_teamwork;
+    @Column(columnDefinition = "LONGTEXT")
+    private String faq;
+
+    public String getOverview() {
+        return overview;
     }
 
     public String getWhy_choose_us() {
@@ -134,8 +154,9 @@ public class Services {
     }
 
     public void setService_id(Long id) {
-        this.service_id = service_id;
+        this.service_id = id; // ✅ correctly sets the service_id
     }
+
 
     public String getActive() {
         return active;
@@ -255,5 +276,21 @@ public class Services {
 
     public void setUpdated_date(String updated_date) {
         this.updated_date = updated_date;
+    }
+
+    public String getKushi_teamwork() {
+        return kushi_teamwork;
+    }
+
+    public void setKushi_teamwork(String kushi_teamwork) {
+        this.kushi_teamwork = kushi_teamwork;
+    }
+
+    public String getFaq() {
+        return faq;
+    }
+
+    public void setFaq(String faq) {
+        this.faq = faq;
     }
 }

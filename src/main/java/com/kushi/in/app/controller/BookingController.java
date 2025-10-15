@@ -1,10 +1,9 @@
 package com.kushi.in.app.controller;
 
 import com.kushi.in.app.dao.BookingRepository;
+import com.kushi.in.app.dao.CustomerRepository;
 import com.kushi.in.app.entity.Customer;
-import com.kushi.in.app.model.BookingDTO;
-import com.kushi.in.app.model.BookingNotificationRequest;
-import com.kushi.in.app.model.BookingRequest;
+import com.kushi.in.app.model.*;
 import com.kushi.in.app.service.BookingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "http://localhost:5173") // frontend React dev server
+@CrossOrigin(origins = "https://main.dhtawzq4yzgjo.amplifyapp.com") // frontend React dev server
 public class BookingController {
 
     private final BookingService bookingService;
@@ -23,6 +22,7 @@ public class BookingController {
     public BookingController(BookingService bookingService, BookingRepository bookingRepository) {
         this.bookingService = bookingService;
         this.bookingRepository = bookingRepository;
+
     }
 
     // ✅ Create Booking
@@ -48,7 +48,8 @@ public class BookingController {
                                           @RequestBody Map<String, String> body) {
         try {
             String status = body.get("status");
-            Customer updated = bookingService.updateBookingStatus(id, status);
+            String canceledBy = body.get("canceledBy"); // NEW
+            Customer updated = bookingService.updateBookingStatus(id, status, canceledBy);
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,5 +82,28 @@ public class BookingController {
             return ResponseEntity.status(500).body("Failed to delete booking: " + e.getMessage());
         }
     }
+
+
+    // ✅ Update Booking Discount
+    // ✅ Update Booking Discount
+    @PutMapping("/{id}/discount")
+    public ResponseEntity<?> updateDiscount(@PathVariable Long id, @RequestBody Map<String, Double> body) {
+        try {
+            Double discount = body.get("discount");
+            bookingService.updateBookingDiscount(id, discount);
+            return ResponseEntity.ok("Discount updated successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Failed to update discount: " + e.getMessage());
+        }
+    }
+
+
+
+    // Fetch all bookings for a specific user
+
+
+
+
 
 }

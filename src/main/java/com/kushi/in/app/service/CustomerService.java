@@ -16,7 +16,6 @@ public interface CustomerService {
 
     void deleteService(Long id);
 
-    Optional<Services> getServiceById(Long id);
 
     Services updateService(Long id, Services services);
 
@@ -32,4 +31,14 @@ public interface CustomerService {
     List<CustomerDTO> getLoggedInCustomers();
     List<CustomerDTO> getGuestCustomers();
     List<CustomerDTO> getCompletedBookings();
+
+
+
+
+    // Update status (Enable/Disable)
+    String updateServiceStatus(Long serviceId, String status);
+
+
+
+
 }

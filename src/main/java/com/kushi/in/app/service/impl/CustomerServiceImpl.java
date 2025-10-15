@@ -80,7 +80,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerDTO> getOrdersByUserId(Long userId) {
-        return customerRepository.findByUserId(userId)
+        return customerRepository.findByUser_Id(userId)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -137,44 +137,44 @@ public class CustomerServiceImpl implements CustomerService {
         serviceRepository.deleteById(id);
     }
 
-    @Override
-    public Optional<Services> getServiceById(Long id) {
-        return serviceRepository.findById(id);
-    }
 
     @Override
     public Services updateService(Long id, Services services) {
         Services existing = serviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Service not found with id " + id));
 
-        // Basic info
-        existing.setService_name(services.getService_name());
-        existing.setService_type(services.getService_type());
-        existing.setService_category(services.getService_category());
-        existing.setService_cost(services.getService_cost());
-        existing.setService_description(services.getService_description());
-        existing.setService_details(services.getService_details());
-        existing.setService_image_url(services.getService_image_url());
-        existing.setRating(services.getRating());
-        existing.setRating_count(services.getRating_count());
-        existing.setRemarks(services.getRemarks());
-        existing.setActive(services.getActive());
-        existing.setCreated_by(services.getCreated_by());
-        existing.setCreate_date(services.getCreate_date());
-        existing.setUpdated_by(services.getUpdated_by());
-        existing.setUpdated_date(services.getUpdated_date());
+        // Only update fields that are sent/valid
+        if (services.getService_name() != null) existing.setService_name(services.getService_name());
+        if (services.getService_type() != null) existing.setService_type(services.getService_type());
+        if (services.getService_category() != null) existing.setService_category(services.getService_category());
 
-        // Large LONGTEXT fields
-        existing.setService_description(services.getService_description());
-        existing.setOverview(services.getOverview());
-        existing.setOur_process(services.getOur_process());
-        existing.setBenefits(services.getBenefits());
-        existing.setWhats_included(services.getWhats_included());
-        existing.setWhats_not_included(services.getWhats_not_included());
-        existing.setWhy_choose_us(services.getWhy_choose_us());
+        // For double (primitive), only update if > 0 (or some other business logic)
+        if (services.getService_cost() > 0) existing.setService_cost(services.getService_cost());
 
+        if (services.getService_description() != null) existing.setService_description(services.getService_description());
+        if (services.getService_details() != null) existing.setService_details(services.getService_details());
+        if (services.getService_image_url() != null) existing.setService_image_url(services.getService_image_url());
+        if (services.getRating() != null) existing.setRating(services.getRating());
+        if (services.getRating_count() != null) existing.setRating_count(services.getRating_count());
+        if (services.getRemarks() != null) existing.setRemarks(services.getRemarks());
+        if (services.getActive() != null) existing.setActive(services.getActive());
+        if (services.getUpdated_by() != null) existing.setUpdated_by(services.getUpdated_by());
+        if (services.getUpdated_date() != null) existing.setUpdated_date(services.getUpdated_date());
+        if (services.getService_package() != null) existing.setService_package(services.getService_package());
+
+        // Large text fields
+        if (services.getOverview() != null) existing.setOverview(services.getOverview());
+        if (services.getOur_process() != null) existing.setOur_process(services.getOur_process());
+        if (services.getBenefits() != null) existing.setBenefits(services.getBenefits());
+        if (services.getWhats_included() != null) existing.setWhats_included(services.getWhats_included());
+        if (services.getWhats_not_included() != null) existing.setWhats_not_included(services.getWhats_not_included());
+        if (services.getWhy_choose_us() != null) existing.setWhy_choose_us(services.getWhy_choose_us());
+
+        if (services.getKushi_teamwork() != null) existing.setKushi_teamwork(services.getKushi_teamwork());
+        if (services.getFaq() != null) existing.setFaq(services.getFaq());
         return serviceRepository.save(existing);
     }
+
 
 
     // ===========================
@@ -190,12 +190,18 @@ public class CustomerServiceImpl implements CustomerService {
                 c.getCustomer_number(),
                 c.getAddress_line_1(),
                 c.getCity(),
-                c.getTotal_amount(),
+                c.getTotalAmount(),
                 c.getBookingDate(),
                 c.getBookingStatus(),
-                c.getBooking_time()
+                c.getBooking_time(),
+                c.getBooking_service_name(), // service name goes here
+                c.getBooking_amount() ,       // booking amount goes last
+                c.getCustomer_id()
+
         );
     }
+
+
 
     // Helper: ignore null fields when copying
     private String[] getNullPropertyNames(Services source) {
@@ -210,5 +216,21 @@ public class CustomerServiceImpl implements CustomerService {
                 })
                 .map(f -> f.getName())
                 .toArray(String[]::new);
+    }
+
+
+
+
+    @Override
+    public String updateServiceStatus(Long id, String status) {
+        Optional<Services> serviceOpt = serviceRepository.findById(id);
+        if (serviceOpt.isPresent()) {
+            Services service = serviceOpt.get();
+            // save Y = enabled, N = disabled
+            service.setActive(status.equals("Y") ? "Y" : "N");
+            serviceRepository.save(service);
+            return "Success";
+        }
+        return "Failed";
     }
 }

@@ -1,22 +1,29 @@
 // src/main/java/com/kushi/in/app/controller/CustomerController.java
 package com.kushi.in.app.controller;
 
-import com.kushi.in.app.dao.ServiceRepository;
+
 import com.kushi.in.app.entity.Customer;
 import com.kushi.in.app.entity.Services;
 import com.kushi.in.app.model.CustomerDTO;
 import com.kushi.in.app.service.CustomerService;
 import org.springframework.http.HttpStatus;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
 
 @RestController
+
 @RequestMapping("/api/customers")
-@CrossOrigin(origins = "http://localhost:5174")
 public class CustomerController {
 
     private final CustomerService customerService;
@@ -95,21 +102,52 @@ public class CustomerController {
     // ===========================
 
     // Add a new service
-    @PostMapping("/add-service")
-    public ResponseEntity<?> addService(@RequestBody Services services) {
+    // Add a new service
+// Controller
+    @PostMapping(value = "/add-service", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> addService(
+            @RequestPart("service") Services services,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
+    ) {
         try {
-            if (services.getService_name() == null || services.getService_name().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Service name is required"));
+            // 1. Handle file upload
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                Path uploadPath = Paths.get(System.getProperty("user.dir") + "/uploads");
+                Files.createDirectories(uploadPath);
+                Files.write(uploadPath.resolve(fileName), imageFile.getBytes());
+
+                services.setService_image_url("/uploads/" + fileName); // local file
+            } else if (services.getService_image_url() != null && !services.getService_image_url().isEmpty()) {
+                // URL provided, keep as-is
+            } else {
+                services.setService_image_url(null); // no image
             }
+
+            // 2. Save the service
             Services saved = customerService.addService(services);
+
+            // 3. Prepend base URL only for local uploads
+            if (saved.getService_image_url() != null && saved.getService_image_url().startsWith("/uploads/")) {
+                String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+                saved.setService_image_url(baseUrl + saved.getService_image_url());
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Get all services
-    @GetMapping("/all-services")
+
+
+
+
+
+    // Get all services - always returns JSON
+    @GetMapping(value = "/all-services", produces = "application/json")
     public ResponseEntity<List<Services>> getAllServices() {
         List<Services> services = customerService.getAllServices();
         return ResponseEntity.ok(services);
@@ -126,22 +164,33 @@ public class CustomerController {
         }
     }
 
-    // Get single service by ID
-    @GetMapping("/service/{id}")
-    public ResponseEntity<Services> getServiceById(@PathVariable Long id) {
-        Optional<Services> serviceData = customerService.getServiceById(id);
-        return serviceData.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-    }
 
-    // Update service by ID
+
     // ✅ Update service by ID
-    @PutMapping("/update-service/{id}")
+    @PutMapping(value = "/update-service/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<?> updateService(
             @PathVariable Long id,
-            @RequestBody Services services) {
+            @RequestPart("service") Services services,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         try {
+            // Handle image update
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                Path uploadPath = Paths.get(System.getProperty("user.dir") + "/uploads");
+                Files.createDirectories(uploadPath);
+                Files.write(uploadPath.resolve(fileName), imageFile.getBytes());
+                services.setService_image_url("/uploads/" + fileName);
+            }
+
             Services updated = customerService.updateService(id, services);
+
+            // Prepend base URL for local images
+            if (updated.getService_image_url() != null && updated.getService_image_url().startsWith("/uploads/")) {
+                String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+                updated.setService_image_url(baseUrl + updated.getService_image_url());
+            }
+
             return ResponseEntity.ok(updated);
 
         } catch (RuntimeException e) {
@@ -155,4 +204,9 @@ public class CustomerController {
     }
 
 
+    // Enable / Disable service
+    @PutMapping("/{id}/status")
+    public String updateServiceStatus(@PathVariable Long id, @RequestParam String status) {
+        return customerService.updateServiceStatus(id, status);
+    }
 }

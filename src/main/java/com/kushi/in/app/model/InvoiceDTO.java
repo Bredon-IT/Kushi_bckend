@@ -19,7 +19,9 @@ public class InvoiceDTO {
 
     private String customer_number;
 
-    private Double total_amount;
+    private String address_line_1;
+
+    private Double totalAmount;
 
     private String worker_assign;
 
@@ -34,6 +36,38 @@ public class InvoiceDTO {
     private String service_name;
 
     private String service_type;
+
+    private String booking_service_name;
+
+    private String discount;
+
+    public String getBooking_service_name() {
+        return booking_service_name;
+    }
+
+    public void setBooking_service_name(String booking_service_name) {
+        this.booking_service_name = booking_service_name;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
+    }
+
+    private String bookingStatus;  // Add this to track booking status
+
+
+    public String getBookingStatus() {
+        return bookingStatus;
+    }
+
+    public void setBookingStatus(String bookingStatus) {
+        this.bookingStatus = bookingStatus;
+    }
+
 
     public Long getBooking_id() {
         return booking_id;
@@ -100,11 +134,11 @@ public class InvoiceDTO {
     }
 
     public Double getTotal_amount() {
-        return total_amount;
+        return totalAmount;
     }
 
     public void setTotal_amount(Double total_amount) {
-        this.total_amount = total_amount;
+        this.totalAmount = totalAmount;
     }
 
     public String getWorker_assign() {
@@ -163,6 +197,12 @@ public class InvoiceDTO {
         this.service_type = service_type;
     }
 
+    public String getAddress_line_1() {
+        return address_line_1;
+    }
 
+    public void setAddress_line_1(String address_line_1) {
+        this.address_line_1 = address_line_1;
+    }
 }
 

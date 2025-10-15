@@ -2,6 +2,8 @@ package com.kushi.in.app.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class BookingDTO {
     private Long booking_id;
@@ -16,6 +18,28 @@ public class BookingDTO {
     private String payment_status;
     private String city;
     private String address;
+
+    private List<String> worker_assign; // NEW
+    private String canceledBy;
+
+    private Double discount;
+    private Double grand_total;
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getGrand_total() {
+        return grand_total;
+    }
+
+    public void setGrand_total(Double grand_total) {
+        this.grand_total = grand_total;
+    }
 
     public Long getBooking_id() {
         return booking_id;
@@ -111,5 +135,22 @@ public class BookingDTO {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+
+    public List<String> getWorker_assign() {
+        return worker_assign;
+    }
+
+    public void setWorker_assign(List<String> worker_assign) {
+        this.worker_assign = worker_assign;
+    }
+
+    public String getCanceledBy() {
+        return canceledBy;
+    }
+
+    public void setCanceledBy(String canceledBy) {
+        this.canceledBy = canceledBy;
     }
 }

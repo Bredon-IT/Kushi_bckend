@@ -13,6 +13,7 @@ import com.kushi.in.app.service.AdminService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +29,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private AdminRepository adminRepository;
-   @Autowired
-   private final CustomerRepository customerRepository;
+    @Autowired
+    private final CustomerRepository customerRepository;
 
     public AdminServiceImpl(AdminRepository adminRepository, CustomerRepository customerRepository) {
         this.adminRepository = adminRepository;
@@ -50,15 +51,22 @@ public class AdminServiceImpl implements AdminService {
     public Customer saveBooking(Customer customer) {
         return adminRepository.save(customer);
     }
+
     // Assigns a worker to an existing booking based on the booking ID
     @Override
     public void assignWorker(Long bookingId, String workerName) {
-        // Tries to find the booking by ID. If not found, throws a runtime exception with a message.
-        Customer booking=adminRepository.findById(bookingId).orElseThrow(()->new RuntimeException("Booking not found ID: "+bookingId));
-        booking.setWorker_assign(workerName); // Sets the worker_assign field of the booking to the given worker name
+        // Fetch booking
+        Customer booking = adminRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found ID: " + bookingId));
 
-        adminRepository.save(booking);// Saves the updated booking back to the database
+        // Assign worker
+        booking.setWorker_assign(workerName);
+
+        // Save booking
+        adminRepository.save(booking);
     }
+
+
 
     @Override
     public Map<String, Object> getbookingStatistics(String timePeriod) {
@@ -82,13 +90,13 @@ public class AdminServiceImpl implements AdminService {
                         .orElse(false))
                 .collect(Collectors.toList());
 
-
         Map<String, Double> serviceRevenue = new HashMap<>();
         double totalAmount = 0.0;
 
         for (Customer booking : bookings) {
             String service = booking.getBooking_service_name();
-            double amount = booking.getTotal_amount();
+            // ✅ Safe null handling
+            double amount = booking.getTotalAmount() != null ? booking.getTotalAmount() : 0.0;
             totalAmount += amount;
             serviceRevenue.put(service, serviceRevenue.getOrDefault(service, 0.0) + amount);
         }
@@ -118,6 +126,7 @@ public class AdminServiceImpl implements AdminService {
         List<Customer> bookings = adminRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
 
+        // Filter bookings based on timePeriod
         bookings = bookings.stream()
                 .filter(b -> Optional.ofNullable(b.getBookingDate())
                         .map(date -> {
@@ -131,22 +140,50 @@ public class AdminServiceImpl implements AdminService {
                         .orElse(false))
                 .collect(Collectors.toList());
 
-
+        // Total Revenue (all filtered bookings)
         double totalAmount = bookings.stream()
-                .mapToDouble(b -> b.getTotal_amount() != null ? b.getTotal_amount() : 0.0)
+                .mapToDouble(b -> b.getTotalAmount() != null ? b.getTotalAmount() : 0.0)
                 .sum();
 
+        // Total Customers
         int totalCustomers = (int) bookings.stream()
                 .map(Customer::getCustomer_id)
                 .distinct()
                 .count();
 
+        // Total Bookings
         int totalBookings = bookings.size();
 
+        // =======================
+        // Monthly Income (bookings in current month)
+        // =======================
+        double monthlyIncome = bookings.stream()
+                .filter(b -> b.getBookingDate() != null)
+                .filter(b -> b.getBookingDate().getMonth() == now.getMonth()
+                        && b.getBookingDate().getYear() == now.getYear())
+                .mapToDouble(b -> b.getTotalAmount() != null ? b.getTotalAmount() : 0.0)
+                .sum();
+
+        // =======================
+        // Net Profit (total revenue minus total service costs)
+        // Assuming each Customer entity has service_cost field
+        // =======================
+        double totalExpenses = bookings.stream()
+                .mapToDouble(b -> {
+                    Services service = b.getServices();
+                    return service != null ? service.getService_cost() : 0.0;
+                })
+                .sum();
+
+        double netProfit = totalAmount - totalExpenses;
+
+        // Build response map
         Map<String, Object> overview = new HashMap<>();
         overview.put("totalAmount", totalAmount);
         overview.put("totalCustomers", totalCustomers);
         overview.put("totalBookings", totalBookings);
+        overview.put("monthlyIncome", monthlyIncome);
+        overview.put("netProfit", netProfit);
 
         return overview;
     }
@@ -168,11 +205,11 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.findAll().stream()
                 .map(customer -> {
 
-                if ("Completed".equalsIgnoreCase(customer.getBookingStatus())){
-                    return  "visit completed";
-                }else {
-                   return  "visit not completed";
-                }
+                    if ("Completed".equalsIgnoreCase(customer.getBookingStatus())){
+                        return  "visit completed";
+                    }else {
+                        return  "visit not completed";
+                    }
 
 
                 }).collect(Collectors.toList());
@@ -186,7 +223,7 @@ public class AdminServiceImpl implements AdminService {
                     if ("Completed".equalsIgnoreCase(customer.getBookingStatus())){
                         status=  "visit completed";
                     }else {
-                      status= "visit not completed";
+                        status= "visit not completed";
                     }
 
                     customer.setVisit_list(status);
@@ -221,39 +258,37 @@ public class AdminServiceImpl implements AdminService {
         return results.stream().map(obj -> {
             CustomerDTO dto = new CustomerDTO();
 
-            dto.setUserId(((Number) obj[2]).longValue());         // userId
-            dto.setCustomer_name((String) obj[1]);                // customer name
-            dto.setBooking_id(((Number) obj[2]).longValue());     // booking id
-            dto.setCustomer_email((String) obj[3]);               // email
-            dto.setCustomer_number((String) obj[4]);              // phone
-            dto.setTotal_amount(((Number) obj[5]).doubleValue()); // total amount
-            dto.setUserId(((Number) obj[0]).longValue());
-            // Optional fields can be left null or set if available
-            dto.setAddress_line_1(null);
-            dto.setCity(null);
-            dto.setBookingDate(null);
-            dto.setBookingStatus(null);
-            dto.setBooking_time(null);
+            dto.setCustomer_email((String) obj[0]);         // customer_email
+            dto.setCustomer_name((String) obj[1]);          // customer_name
+            dto.setBooking_amount(((Number) obj[2]).doubleValue()); // booking_count (optional field)
+            dto.setAddress_line_1((String) obj[3]);
+            dto.setCustomer_number((String) obj[4]);
+            dto.setTotalAmount(((Number) obj[5]).doubleValue());
 
             return dto;
         }).collect(Collectors.toList());
     }
 
 
+
     @Override
     public List<Map<String, Object>> getTopServices() {
-        List<Object[]> results = adminRepository.findTopServices(Pageable.ofSize(3));
-
+        List<Object[]> results = adminRepository.findTopServices(PageRequest.of(0, 10));
         List<Map<String, Object>> responseList = new ArrayList<>();
 
         for (Object[] row : results) {
             Map<String, Object> servicesData = new HashMap<>();
-            servicesData.put("booking_service_name", row[0]);
-            servicesData.put("bookingCount", row[1]);
+            servicesData.put("booking_service_name", row[0]); // service_name
+            servicesData.put("service_image_url", row[1]);
+            servicesData.put("service_description", row[2]);
+            servicesData.put("bookingCount", ((Number) row[3]).longValue());
+            servicesData.put("service_name", row[4]);
             responseList.add(servicesData);
         }
+
         return responseList;
     }
+
 
 
     @Override
@@ -274,7 +309,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<InvoiceDTO> getAllInvoices() {
-        // Fetch customers from repository and assign to a variable
+        // Fetch customers ordered by booking date
         List<Customer> customers = customerRepository.findAllByOrderByBookingDateDesc();
 
         return customers.stream()
@@ -282,21 +317,27 @@ public class AdminServiceImpl implements AdminService {
                 .map(customer -> {
                     InvoiceDTO dto = new InvoiceDTO();
 
+                    // Booking Details
                     dto.setBooking_id(customer.getBooking_id());
                     dto.setBookingDate(customer.getBookingDate());
                     dto.setBooking_amount(customer.getBooking_amount() != null ? customer.getBooking_amount() : 0.0);
-                    dto.setTotal_amount(customer.getTotal_amount() != null ? customer.getTotal_amount() : 0.0);
+                    dto.setTotal_amount(customer.getTotalAmount() != null ? customer.getTotalAmount() : 0.0);
                     dto.setWorker_assign(customer.getWorker_assign());
                     dto.setCity(customer.getCity());
+                    dto.setBooking_service_name(customer.getBooking_service_name());
 
-                    dto.setCustomer_id(customer.getCustomer_id()); // safe if type is Integer
+                    // ✅ FIX: Map booking status
+                    dto.setBookingStatus(customer.getBookingStatus());
 
+                    // Customer Details
+                    dto.setCustomer_id(customer.getCustomer_id());
                     dto.setCustomer_name(customer.getCustomer_name());
                     dto.setCustomer_email(customer.getCustomer_email());
                     dto.setCustomer_number(customer.getCustomer_number());
+                    dto.setAddress_line_1(customer.getAddress_line_1());
 
+                    // Service Details
                     dto.setService_id(customer.getService_id());
-
                     Services service = customer.getServices();
                     if (service != null) {
                         dto.setService_name(service.getService_name());
@@ -310,6 +351,7 @@ public class AdminServiceImpl implements AdminService {
                 })
                 .collect(Collectors.toList());
     }
+
 
 
     public List<Map<String, Object>> getServiceReport(){
@@ -326,7 +368,7 @@ public class AdminServiceImpl implements AdminService {
             List<Customer> serviceBookings = entry.getValue();
 
             double totalRevenue = serviceBookings.stream()
-                    .mapToDouble(Customer::getTotal_amount)
+                    .mapToDouble(Customer::getTotalAmount)
                     .sum();
 
             int bookingCount = serviceBookings.size();
@@ -338,6 +380,54 @@ public class AdminServiceImpl implements AdminService {
             result.add(map);
         }
         return result;
+    }
+
+
+    //to get category wise chart
+    public List<Map<String, Object>> getCategoryBookings(String categoryFilter, String startDateStr, String endDateStr) {
+
+        java.time.LocalDateTime startDate = null;
+        java.time.LocalDateTime endDate = null;
+
+        if (startDateStr != null && !startDateStr.isEmpty()) {
+            startDate = java.time.LocalDate.parse(startDateStr).atStartOfDay();
+        }
+        if (endDateStr != null && !endDateStr.isEmpty()) {
+            endDate = java.time.LocalDate.parse(endDateStr).atTime(23, 59, 59);
+        }
+
+        List<Customer> bookings = customerRepository.findBookingsByCategoryAndDate(categoryFilter, startDate, endDate);
+
+        Map<String, Map<String, Map<String, Long>>> resultMap = new HashMap<>();
+
+        for (Customer booking : bookings) {
+            String category = booking.getServices() != null ? booking.getServices().getService_category() : "Unknown";
+            String subcategory = booking.getServices() != null ? booking.getServices().getService_type() : "Unknown";
+            String status = booking.getBookingStatus();
+
+            resultMap.putIfAbsent(category, new HashMap<>());
+            Map<String, Map<String, Long>> subMap = resultMap.get(category);
+
+            subMap.putIfAbsent(subcategory, new HashMap<>());
+            Map<String, Long> statusMap = subMap.get(subcategory);
+
+            statusMap.put("completed", statusMap.getOrDefault("completed", 0L) + ("Completed".equalsIgnoreCase(status) ? 1 : 0));
+            statusMap.put("cancelled", statusMap.getOrDefault("cancelled", 0L) + ("Cancelled".equalsIgnoreCase(status) ? 1 : 0));
+        }
+
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (String cat : resultMap.keySet()) {
+            for (String sub : resultMap.get(cat).keySet()) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("category", cat);
+                entry.put("subcategory", sub);
+                entry.put("completed", resultMap.get(cat).get(sub).getOrDefault("completed", 0L));
+                entry.put("cancelled", resultMap.get(cat).get(sub).getOrDefault("cancelled", 0L));
+                response.add(entry);
+            }
+        }
+
+        return response;
     }
 
 

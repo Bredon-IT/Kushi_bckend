@@ -1,76 +1,58 @@
 package com.kushi.in.app.service.impl;
 
-import com.kushi.in.app.dao.OrderRepository;
+import com.kushi.in.app.dao.CustomerRepository;
 import com.kushi.in.app.dao.UserRepository;
-import com.kushi.in.app.entity.Order;
-import com.kushi.in.app.entity.OrderItem;
+import com.kushi.in.app.entity.Customer;
 import com.kushi.in.app.entity.User;
-import com.kushi.in.app.model.OrderDTO;
-import com.kushi.in.app.model.OrderRequest;
+import com.kushi.in.app.model.RatingRequest;
 import com.kushi.in.app.service.OrderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class OrderServiceImpl implements OrderService {
-    private final OrderRepository orderRepository;
+
+    private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, UserRepository userRepository) {
-        this.orderRepository = orderRepository;
+    public OrderServiceImpl(CustomerRepository customerRepository, UserRepository userRepository) {
+        this.customerRepository = customerRepository;
         this.userRepository = userRepository;
     }
 
-    @Transactional
     @Override
-    public Order createOrder(OrderRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    @Transactional
+    public List<Customer> getBookingsForUserByEmail(String email) {
+        // Optional: sync existing bookings if needed
+        customerRepository.syncUserIdsWithEmails();
+        return customerRepository.findBookingsByUserEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public Customer createBookingForUser(Customer booking, Long userId) {
+        // Fetch logged-in user
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Order order = new Order();
-        order.setUser(user);
-        order.setTotalAmount(request.getTotalAmount());
-        order.setTax(request.getTax());
-        order.setSavings(request.getSavings());
-        order.setPromoCode(request.getPromoCode());
+        // Assign user to booking automatically
+        booking.setUser(user);
+        booking.setCustomer_email(user.getEmail()); // ensure email is correct
 
-        List<OrderItem> items = request.getCartItems().stream().map(ci -> {
-            OrderItem item = new OrderItem();
-            item.setOrder(order);
-            item.setServiceId(ci.getServiceId());
-            item.setServiceName(ci.getServiceName());
-            item.setPrice(ci.getPrice());
-            item.setQuantity(ci.getQuantity());
-            return item;
-        }).collect(Collectors.toList());
+        // Save booking
+        Customer savedBooking = customerRepository.save(booking);
 
-        order.setItems(items);
-
-        return orderRepository.save(order);
+        return savedBooking;
     }
 
     @Override
-    public List<OrderDTO> getOrdersByUserId(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
+    public void updateRatingAndFeedback(Long bookingId, RatingRequest request) {
+        Customer booking = customerRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        return orders.stream().map(order -> {
-            OrderDTO dto = new OrderDTO();
-            dto.setId(order.getId());
-            dto.setDate(order.getCreatedAt());
-            dto.setServices(
-                    order.getItems().stream()
-                            .map(OrderItem::getServiceName)
-                            .collect(Collectors.toList())
-            );
-            dto.setAmount(order.getTotalAmount());
-            dto.setAddress(order.getUser().getAddress());
-            dto.setRating(null); // or set real rating if exists
-            return dto;
-        }).collect(Collectors.toList());
+        booking.setRating(request.getRating());
+        booking.setFeedback(request.getFeedback());
+        customerRepository.save(booking);
     }
-
-
 }

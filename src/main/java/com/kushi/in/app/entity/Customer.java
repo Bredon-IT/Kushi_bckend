@@ -18,13 +18,16 @@ public class Customer {
 
     private Integer customer_id;
     private String customer_name;
+    @Column(name = "customer_email")
     private String customer_email;
+
     private String customer_number;
     private String address_line_1;
     private String address_line_2;
     private String address_line_3;
     private Double booking_amount;
-    private Double total_amount;
+
+    private Double totalAmount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime bookingDate; // ⭐ Use consistent camelCase field name
@@ -48,6 +51,12 @@ public class Customer {
     private String worker_assign;
     private String visit_list;
 
+    private String feedback;
+
+    @Column(name = "canceled_by")
+    private String canceledBy; // values: "customer" or "admin"
+
+
     @Column(name = "service_id")
     private Long service_id;
 
@@ -59,6 +68,60 @@ public class Customer {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
+
+
+    private Double discount;
+
+    @Column(insertable = false, updatable = false) // grand_total is auto-calculated
+    private Double grand_total;
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getGrand_total() {
+        return grand_total;
+    }
+
+    public void setGrand_total(Double grand_total) {
+        this.grand_total = grand_total;
+    }
+
+
+    @Column(name = "service_category")
+    private String serviceCategory;
+
+    public String getServiceCategory() {
+        return serviceCategory;
+    }
+
+    public void setServiceCategory(String serviceCategory) {
+        this.serviceCategory = serviceCategory;
+    }
+
+    // ⭐️ NEW FIELD
+    private Integer rating;  // 1–5 stars
+
+
+    public String getCanceledBy() {
+        return canceledBy;
+    }
+
+    public void setCanceledBy(String canceledBy) {
+        this.canceledBy = canceledBy;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
 
     public Long getBooking_id() {
         return booking_id;
@@ -132,12 +195,12 @@ public class Customer {
         this.booking_amount = booking_amount;
     }
 
-    public Double getTotal_amount() {
-        return total_amount;
+    public Double getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setTotal_amount(Double total_amount) {
-        this.total_amount = total_amount;
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     public LocalDateTime getBookingDate() {
@@ -299,4 +362,14 @@ public class Customer {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.kushi.in.app.service.impl;
 
+import com.kushi.in.app.dao.CustomerRepository;
 import com.kushi.in.app.dao.UserRepository;
 import com.kushi.in.app.entity.User;
 import com.kushi.in.app.model.AuthResponse;
@@ -15,9 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, CustomerRepository customerRepository) {
         this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -36,6 +39,13 @@ public class UserServiceImpl implements UserService {
         user.setPassword(request.getPassword()); // 🔴 Ideally hash this
 
         User saved = userRepository.save(user);
+
+
+
+        customerRepository.updateUserIdByEmail(saved.getEmail());
+
+        // 🔹 Sync user_id in tbl_booking_info
+        customerRepository.syncUserIdsWithEmails();
 
         return new AuthResponse(
                 saved.getId(),

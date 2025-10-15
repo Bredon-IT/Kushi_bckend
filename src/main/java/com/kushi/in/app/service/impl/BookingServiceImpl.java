@@ -1,9 +1,11 @@
 package com.kushi.in.app.service.impl;
 
+import com.kushi.in.app.dao.CustomerRepository;
 import com.kushi.in.app.model.BookingDTO;
 import com.kushi.in.app.model.BookingRequest;
 import com.kushi.in.app.entity.Customer;
 import com.kushi.in.app.dao.BookingRepository;
+import com.kushi.in.app.model.OrderDTO;
 import com.kushi.in.app.service.BookingService;
 import com.kushi.in.app.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -22,12 +27,15 @@ public class BookingServiceImpl implements BookingService {
     private JavaMailSender mailSender;
 
     private final BookingRepository bookingRepository;
+    private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
-                              NotificationService notificationService) {
+                              NotificationService notificationService,
+                              CustomerRepository customerRepository) {
         this.bookingRepository = bookingRepository;
         this.notificationService = notificationService;
+        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -45,7 +53,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setCity(request.getCity());
         booking.setZip_code(request.getZipCode());
         booking.setBooking_amount(request.getBookingAmount());
-        booking.setTotal_amount(request.getTotalAmount());
+        booking.setTotalAmount(request.getTotalAmount());
         booking.setBooking_service_name(request.getBookingServiceName());
         booking.setRemarks(request.getRemarks());
         booking.setBookingStatus(request.getBookingStatus() != null ? request.getBookingStatus() : "Pending");
@@ -57,7 +65,7 @@ public class BookingServiceImpl implements BookingService {
         // Parse bookingDate
         if (request.getBookingDate() != null && !request.getBookingDate().isEmpty()) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-            booking.setBookingDate(LocalDateTime.parse(request.getBookingDate(), formatter));
+            booking.setBookingDate(LocalDateTime.parse(request.getBookingDate()));
         }
 
         // Save the booking first to get the booking ID
@@ -99,16 +107,26 @@ public class BookingServiceImpl implements BookingService {
             dto.setPayment_status(c.getPayment_status());
             dto.setCity(c.getCity());
             dto.setAddress(c.getAddress_line_1());
+            // FIX: Convert comma-separated String to List<String>
+            dto.setWorker_assign(
+                    c.getWorker_assign() != null && !c.getWorker_assign().isEmpty()
+                            ? Arrays.asList(c.getWorker_assign().split(","))
+                            : Collections.emptyList()
+            );  dto.setCanceledBy(c.getCanceledBy());
             return dto;
         }).toList();
     }
 
     @Override
-    public Customer updateBookingStatus(Long bookingId, String status) {
+    public Customer updateBookingStatus(Long bookingId, String status, String canceledBy) {
         Customer customer = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         customer.setBookingStatus(status != null ? status.toLowerCase() : "pending");
+
+        if ("cancelled".equalsIgnoreCase(status)) {
+            customer.setCanceledBy(canceledBy);
+        }
         bookingRepository.save(customer);
 
         try {
@@ -149,4 +167,28 @@ public class BookingServiceImpl implements BookingService {
                 " to email: " + email + " and phone: " + phoneNumber);
         // TODO: Implement real notification logic
     }
+
+
+    @Override
+    public void updateBookingDiscount(Long bookingId, Double discount) {
+        Customer booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Save discount
+        booking.setDiscount(discount);
+
+        // Calculate and save grand total
+        double finalAmount = booking.getBooking_amount() - discount;
+        if (finalAmount < 0) {
+            finalAmount = 0; // Prevent negative totals
+        }
+        booking.setGrand_total(finalAmount);
+
+        bookingRepository.save(booking);
+    }
+
+
+
+
+
 }

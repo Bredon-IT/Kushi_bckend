@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/gallery")
-@CrossOrigin(origins ={ "http://localhost:5174", "http://localhost:5173"})
+@CrossOrigin(origins ={ "https://main.dhtawzq4yzgjo.amplifyapp.com", "https://main.dhtawzq4yzgjo.amplifyapp.com"})
 public class GalleryController {
 
     @Autowired
@@ -21,15 +21,18 @@ public class GalleryController {
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(
-            @RequestParam("file") MultipartFile file,
+            @RequestParam(value="file", required=false) MultipartFile file,
+            @RequestParam(value="fileUrl", required=false) String fileUrl,
             @RequestParam("description") String description) {
         try {
-            galleryService.saveFile(file, description);
+            galleryService.saveFile(file, fileUrl, description);
             return ResponseEntity.ok("File uploaded successfully");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
         }
-    }  // ✅ properly closed uploadFile method
+    }
+    // ✅ properly closed uploadFile method
 
     @GetMapping
     public ResponseEntity<List<GalleryDTO>> getAllFiles() {

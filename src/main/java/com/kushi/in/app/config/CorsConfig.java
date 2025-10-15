@@ -13,50 +13,12 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                String[] allowedOrigins = {
-                        "http://localhost:5173",
-                        "http://localhost:5174",
-                        "http://localhost:5175"
-                };
-                // customers
-                registry.addMapping("/api/customers/**")
-                        .allowedOrigins(allowedOrigins)
+                registry.addMapping("/**")
+                        .allowedOriginPatterns("*") // ✅ allow all origins
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("*")
-                        .allowCredentials(true);
-
-                // auth
-                registry.addMapping("/api/auth/**")
-                        .allowedOrigins(allowedOrigins)
-                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .exposedHeaders("*")
-                        .allowCredentials(true);
-
-                // admin
-                registry.addMapping("/api/admin/**")
-                        .allowedOrigins(allowedOrigins)
-                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .exposedHeaders("*")
-                        .allowCredentials(true);
-
-                // bookings
-                registry.addMapping("/api/bookings/**")
-                        .allowedOrigins(allowedOrigins)
-                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .exposedHeaders("*")
-                        .allowCredentials(true);
-
-                // gallery
-                registry.addMapping("/api/admin/gallery/**")
-                        .allowedOrigins(allowedOrigins)
-                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .exposedHeaders("*")
-                        .allowCredentials(true);
+                        .allowCredentials(true); // allow cookies/auth headers
             }
         };
     }

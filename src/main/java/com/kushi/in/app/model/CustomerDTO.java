@@ -1,19 +1,26 @@
 package com.kushi.in.app.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 public class CustomerDTO {
     private Long booking_id;
+    private Integer customer_id;
     private Long userId;
     private String customer_name;
     private String customer_email;
     private String customer_number;
     private String address_line_1;
     private String city;
-    private Double total_amount;
+    private Double totalAmount;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDateTime bookingDate;
     private String bookingStatus;
     private String booking_time;
+    private String booking_service_name;
+    private Double booking_amount;
+
 
     // No-arg constructor
     public CustomerDTO() {
@@ -21,8 +28,9 @@ public class CustomerDTO {
 
     // Existing full-arg constructor
     public CustomerDTO(Long booking_id, Long userId, String customer_name, String customer_email, String customer_number,
-                       String address_line_1, String city, Double total_amount, LocalDateTime bookingDate,
-                       String bookingStatus, String booking_time) {
+                       String address_line_1, String city, Double totalAmount, LocalDateTime bookingDate,
+                       String bookingStatus, String booking_time, String booking_service_name, Double booking_amount, Integer customer_id ){
+
         this.booking_id = booking_id;
         this.userId = userId;
         this.customer_name = customer_name;
@@ -30,10 +38,14 @@ public class CustomerDTO {
         this.customer_number = customer_number;
         this.address_line_1 = address_line_1;
         this.city = city;
-        this.total_amount = total_amount;
+        this.totalAmount = totalAmount;
         this.bookingDate = bookingDate;
         this.bookingStatus = bookingStatus;
         this.booking_time = booking_time;
+        this.booking_amount = booking_amount;
+        this.booking_service_name = booking_service_name;
+        this.customer_id = customer_id;
+
     }
 
     // Getters and setters...
@@ -94,12 +106,12 @@ public class CustomerDTO {
         this.city = city;
     }
 
-    public Double getTotal_amount() {
-        return total_amount;
+    public Double getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setTotal_amount(Double total_amount) {
-        this.total_amount = total_amount;
+    public void setTotalAmount(Double total_amount) {
+        this.totalAmount = total_amount;
     }
 
     public LocalDateTime getBookingDate() {
@@ -125,4 +137,30 @@ public class CustomerDTO {
     public void setBooking_time(String booking_time) {
         this.booking_time = booking_time;
     }
+
+    public String getBooking_service_name() {
+        return booking_service_name;
+    }
+
+    public void setBooking_service_name(String booking_service_name) {
+        this.booking_service_name = booking_service_name;
+    }
+
+    public Double getBooking_amount() {
+        return booking_amount;
+    }
+
+    public void setBooking_amount(Double booking_amount) {
+        this.booking_amount = booking_amount;
+    }
+
+    public Integer getCustomer_id() {
+        return customer_id;
+    }
+
+    public void setCustomer_id(Integer customer_id) {
+        this.customer_id = customer_id;
+    }
+
+
 }
